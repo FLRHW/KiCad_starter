@@ -371,8 +371,8 @@ This template relies on the work of many open-source contributors:
   INTI and contributors, building on work including John Beard's KiPlot:
   automation, reports, exports and document generation.
 - [KDT_Hierarchical_KiBot](https://github.com/nguyen-v/KDT_Hierarchical_KiBot),
-  by Vincent Nguyen: inspiration for hierarchical project organisation and
-  automated fabrication/assembly documentation.
+  by Vincent Nguyen: inspiration for project organisation and automated
+  documentation.
 - [KiCad](https://www.kicad.org/) and its library contributors: schematic/PCB
   editing, checks, plotting and 3D export.
 - [KiAuto](https://github.com/INTI-CMNB/KiAuto): KiCad automation utilities.
