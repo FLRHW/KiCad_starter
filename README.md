@@ -361,9 +361,9 @@ provided as is, without warranty, under the terms of LICENSE.
 
 ## Credits and acknowledgements
 
-Development of this template was assisted by OpenAI ChatGPT, including work on
-configuration, helper scripts, documentation and troubleshooting. Project decisions
-and testing were carried out by FLRHW.
+Development of this template was AI assisted, including work on configuration, 
+helper scripts, documentation and troubleshooting. Project decisions and testing 
+were carried out by FLRHW.
 
 This template relies on the work of many open-source contributors:
 
