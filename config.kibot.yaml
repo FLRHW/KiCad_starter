@@ -1,0 +1,898 @@
+kibot:
+  version: 1
+
+global:
+  date_format: '%d/%m/%Y'
+  date_time_format: '%d/%m/%Y'
+  kicad_dnp_applied: true
+  cross_footprints_for_dnp: true
+  dnp_cross_top_layer: AssyDNPTop
+  dnp_cross_bottom_layer: AssyDNPBottom
+  set_text_variables_sheet_title: true
+  set_text_variables_sheet_title_default: ''
+  restore_project: false
+
+preflight:
+  check_zone_fills: true
+  check_fields:
+    - field: Manufacturer Part Number
+      regex: '\S'
+      severity: warning
+      severity_missing: warning
+      exclude_filter: '!_mechanical'
+    - field: Manufacturer
+      regex: '\S'
+      severity: warning
+      severity_missing: warning
+      exclude_filter: '!_mechanical'
+  set_text_variables:
+    - name: CONTENTS_LABEL
+      text: 'Contents'
+  erc:
+    dont_stop: true
+    dir: reports
+    format: [HTML, JSON]
+    output: '%f-erc.%x'
+  drc:
+    dont_stop: true
+    dir: reports
+    format: [HTML, JSON]
+    output: '%f-drc.%x'
+  draw_fancy_stackup:
+    layer: FabricationNotes
+    group_name: stackup
+
+
+filters:
+  - name: assembly_bom_top_only
+    type: generic
+    exclude_bottom: true
+    exclude_not_on_board: true
+
+  - name: assembly_bom_bottom_only
+    type: generic
+    exclude_top: true
+    exclude_not_on_board: true
+
+  - name: keep_only_testpoints
+    type: generic
+    include_only:
+      - column: Reference
+        regex: '^TP[0-9]+$'
+
+outputs:
+
+# ----------------------------------------------------------------------------
+  - name: blender_render
+    type: blender_export
+    run_by_default: false
+    dir: 3d
+    options:
+      pcb_import:
+        enhance_materials: true
+#      auto_camera_z_axis_factor: 1.3
+      light:
+        - name: sunlight
+          type: SUN
+          pos_x: '-size*3.33'
+          pos_y: 'size*3.33'
+          pos_z: 'size*5'
+          energy: 0.5
+        - name: softbox1
+          type: AREA
+          pos_x: 'size*3.33'
+          pos_y: 'size*3.33'
+          pos_z: 'size*5'
+          energy: @AUTO_LIGHT_ENERGY@
+        - name: softbox2
+          type: AREA
+          pos_x: 'size*3.33'
+          pos_y: '-size*3.33'
+          pos_z: 'size*5'
+          energy: @AUTO_LIGHT_ENERGY@
+        - name: softbox3
+          type: AREA
+          pos_x: '-size*3.33'
+          pos_y: '-size*3.33'
+          pos_z: 'size*5'
+          energy: @AUTO_LIGHT_ENERGY@
+        - name: softbox4
+          type: AREA
+          pos_x: '-size*3.33'
+          pos_y: 'size*3.33'
+          pos_z: 'size*5'
+          energy: @AUTO_LIGHT_ENERGY@
+
+      outputs:
+        - type: render
+          output: '%f-%i.%x'
+      render_options:
+        auto_crop: true
+        transparent_background: true
+        samples: @RENDER_SAMPLES_@RENDER_MODE@@
+        resolution_x: @RENDER_WIDTH_@RENDER_MODE@@
+        resolution_y: @RENDER_HEIGHT_@RENDER_MODE@@
+
+  - name: blender_top
+    comment: Board flat top view
+    type: blender_export
+    extends: blender_render
+    dir: 3d
+    run_by_default: @RENDER_RUN_@RENDER_MODE@@
+    priority: 90
+    options:
+      point_of_view:
+        - view: top
+          file_id: top
+
+  - name: blender_bottom
+    comment: Board flat bottom view
+    type: blender_export
+    extends: blender_render
+    dir: 3d
+    run_by_default: @RENDER_RUN_@RENDER_MODE@@
+    priority: 90
+    options:
+      point_of_view:
+        - view: bottom
+          file_id: bottom
+
+  - name: blender_angled_top
+    comment: Board angled top view
+    type: blender_export
+    extends: blender_render
+    dir: 3d
+    run_by_default: @RENDER_RUN_@RENDER_MODE@@
+    priority: 90
+    options:
+      point_of_view:
+        - view: top
+          rotate_x: 15
+          rotate_y: 25
+          rotate_z: 0
+          file_id: angled_top
+
+  - name: blender_angled_bottom
+    comment: Board angled bottom view
+    type: blender_export
+    extends: blender_render
+    dir: 3d
+    run_by_default: @RENDER_RUN_@RENDER_MODE@@
+    priority: 90
+    options:
+      point_of_view:
+        - view: bottom
+          rotate_x: -15
+          rotate_y: 25
+          rotate_z: 0
+          file_id: angled_bottom
+
+  - name: blender_bare_top
+    comment: Bare board top view
+    type: blender_export
+    extends: blender_render
+    dir: 3d
+    run_by_default: @RENDER_RUN_@RENDER_MODE@@
+    priority: 90
+    options:
+      pcb_import:
+        components: false
+        solder_joints: NONE
+      point_of_view:
+        - view: top
+          file_id: bare_top
+
+  - name: blender_bare_bottom
+    comment: Bare board bottom view
+    type: blender_export
+    extends: blender_render
+    dir: 3d
+    run_by_default: @RENDER_RUN_@RENDER_MODE@@
+    priority: 90
+    options:
+      pcb_import:
+        components: false
+        solder_joints: NONE
+      point_of_view:
+        - view: bottom
+          file_id: bare_bottom
+
+
+
+# ----------------------------------------------------------------------------
+
+  - name: schematic_pdf
+    type: pdf_sch_print
+    dir: .
+    options:
+      default_font: '@SCHEMATIC_FONT@'
+      color_theme: '@SCHEMATIC_THEME@'
+      monochrome: false
+
+# ----------------------------------------------------------------------------
+
+  - name: drillmap
+    comment: Drill details for fabrication drawings
+    type: excellon
+    dir: tables
+    options:
+      generate_drill_files: false
+      table:
+        output: '%f-%i.%x'
+        units: millimeters
+        unify_pth_and_npth: 'no'
+        group_slots_and_round_holes: true
+        columns:
+          - Count
+          - Hole Size
+          - Plated
+          - Hole Shape
+          - Drill Layer Pair
+
+
+# ----------------------------------------------------------------------------
+
+  - name: pcb_fabrication_pdf
+    comment: Fabrication drawing
+    type: pcb_print
+    dir: fabrication
+    options:
+      color_theme: _builtin_classic
+      output: '%f-pcb-fabrication.%x'
+      format: PDF
+      title: fabrication drawing
+      scaling: 1.0
+      plot_sheet_reference: true
+      frame_plot_mechanism: internal
+      colored_pads: false
+      colored_vias: false
+      realistic_solder_mask: false
+      dpi: 1200
+      sheet_reference_layout: ''
+      drill:
+        unify_pth_and_npth: 'no'
+        group_slots_and_round_holes: true
+      include_table:
+        group_name: kibot_fab_table
+        outputs:
+          - name: drillmap
+            text_alignment: left
+            border_width: 0.4
+            header_rule_width: 0.2
+            horizontal_rule_width: 0
+            vertical_rule_width: 0.2
+            top_rule_width: 0.2
+            bottom_rule_width: 0.2
+            row_spacing: 3
+            column_spacing: 2
+
+      pages:
+        - sheet: 'Bare board overview'
+          layer_var: ''
+          sheet_reference_color: '#000000'
+          layers: @FAB_OVERVIEW_LAYERS_@RENDER_MODE@@
+
+        - sheet: 'Fabrication requirements'
+          layer_var: 'Fabrication requirements'
+          sheet_reference_color: '#000000'
+          layers:
+            - layer: FabricationNotes
+              color: '#000000'
+
+        - sheet: 'Top fabrication (scale 1:1)'
+          layer_var: 'Top fabrication (scale 1:1)'
+          sheet_reference_color: '#000000'
+          colored_holes: true
+          holes_color: '#FFFFFF'
+          layers:
+            - layer: Edge.Cuts
+              color: '#000000'
+            - layer: F.Cu
+              color: '#F2F2F2'
+            - layer: F.Mask
+              color: '#E2E2E2'
+            - layer: F.Paste
+              color: '#E2E2E2'
+            - layer: F.Silkscreen
+              color: '#DBDBDB'
+            - layer: TopDimensions
+              color: '#000000'
+
+        - sheet: 'Bottom fabrication (scale 1:1)'
+          layer_var: 'Bottom fabrication (scale 1:1)'
+          mirror: true
+          mirror_pcb_text: true
+          sheet_reference_color: '#000000'
+          colored_holes: true
+          holes_color: '#FFFFFF'
+          layers:
+            - layer: Edge.Cuts
+              color: '#000000'
+            - layer: B.Cu
+              color: '#F2F2F2'
+            - layer: B.Mask
+              color: '#E2E2E2'
+            - layer: B.Paste
+              color: '#E2E2E2'
+            - layer: B.Silkscreen
+              color: '#DBDBDB'
+            - layer: BottomDimensions
+              color: '#000000'
+
+        - sheet: 'Drill drawing — %lp (scale 1:1)'
+          layer_var: 'Drill drawing — %lp (scale 1:1)'
+          repeat_for_layer: FabricationDrillMap
+          repeat_layers: drill_pairs
+          sheet_reference_color: '#000000'
+          layers:
+            - layer: FabricationDrillMap
+              color: '#000000'
+            - layer: Edge.Cuts
+              color: '#000000'
+
+        - sheet: '%ln (scale 1:1)'
+          layer_var: '%ln (scale 1:1)'
+          repeat_for_layer: F.Cu
+          repeat_layers: copper
+          repeat_inherit: false
+          sheet_reference_color: '#000000'
+          colored_holes: true
+          holes_color: '#FFFFFF'
+          layers:
+            - layer: F.Cu
+#              color: '#000000'
+            - layer: Edge.Cuts
+              color: '#000000'
+
+        - sheet: 'F.Mask (scale 1:1)'
+          layer_var: 'F.Mask (scale 1:1)'
+          sheet_reference_color: '#000000'
+          colored_holes: true
+          holes_color: '#FFFFFF'
+          layers:
+            - layer: F.Mask
+ #             color: '#000000'
+            - layer: Edge.Cuts
+              color: '#000000'
+
+        - sheet: 'B.Mask (scale 1:1)'
+          layer_var: 'B.Mask (scale 1:1)'
+          sheet_reference_color: '#000000'
+          colored_holes: true
+          holes_color: '#FFFFFF'
+          layers:
+            - layer: B.Mask
+  #            color: '#000000'
+            - layer: Edge.Cuts
+              color: '#000000'
+
+        - sheet: 'F.Silkscreen (scale 1:1)'
+          layer_var: 'F.Silkscreen (scale 1:1)'
+          sheet_reference_color: '#000000'
+          colored_holes: true
+          holes_color: '#FFFFFF'
+          layers:
+            - layer: F.Silkscreen
+              color: '#000000'
+            - layer: Edge.Cuts
+              color: '#000000'
+
+        - sheet: 'B.Silkscreen (scale 1:1)'
+          layer_var: 'B.Silkscreen (scale 1:1)'
+          sheet_reference_color: '#000000'
+          colored_holes: true
+          holes_color: '#FFFFFF'
+          layers:
+            - layer: B.Silkscreen
+              color: '#000000'
+            - layer: Edge.Cuts
+              color: '#000000'
+
+
+# ----------------------------------------------------------------------------
+
+
+  - name: parts_count_top
+    comment: Fitted component counts on top side
+    type: report
+    dir: tables
+    options:
+      exclude_filter: _mechanical
+      template: templates/assembly_count_top.txt
+      output: '%f-assembly-count-top.csv'
+      do_convert: false
+
+  - name: parts_count_bottom
+    comment: Fitted component counts on bottom side
+    type: report
+    dir: tables
+    options:
+      exclude_filter: _mechanical
+      template: templates/assembly_count_bottom.txt
+      output: '%f-assembly-count-bottom.csv'
+      do_convert: false
+
+
+# ----------------------------------------------------------------------------
+
+  - name: assembly_bom_top
+    comment: Fitted top-side BOM for the assembly PDF
+    type: bom
+    dir: tables
+    options:
+      format: CSV
+      output: '%f-assembly-bom-top.csv'
+      ignore_dnf: false
+      group_not_fitted: false
+      kicad_dnp_applied: 'yes'
+      exclude_marked_in_sch: true
+      exclude_marked_in_pcb: true
+      exclude_filter: [_mechanical, assembly_bom_top_only]
+      group_fields: [Part, Part Lib, Value, Footprint, Footprint Lib, Manufacturer Part Number, Manufacturer, Voltage, Tolerance, Current, Power]
+      parse_value: false
+      merge_blank_fields: false
+      group_connectors: false
+      columns:
+        - field: References
+          name: References
+        - field: Quantity Per PCB
+          name: Qty
+        - field: Value
+          name: Value
+        - field: Footprint
+          name: Footprint
+        - field: Manufacturer Part Number
+          name: MPN
+        - field: Manufacturer
+          name: Manufacturer
+        - field: Status
+          name: Status
+      csv:
+        hide_pcb_info: true
+        hide_stats_info: true
+        hide_header: false
+        separator: ','
+
+  - name: assembly_bom_bottom
+    comment: Fitted bottom-side BOM for the assembly PDF
+    type: bom
+    dir: tables
+    options:
+      format: CSV
+      output: '%f-assembly-bom-bottom.csv'
+      ignore_dnf: false
+      group_not_fitted: false
+      kicad_dnp_applied: 'yes'
+      exclude_marked_in_sch: true
+      exclude_marked_in_pcb: true
+      exclude_filter: [_mechanical, assembly_bom_bottom_only]
+      group_fields: [Part, Part Lib, Value, Footprint, Footprint Lib, MPN, Manufacturer, Voltage, Tolerance, Current, Power]
+      parse_value: false
+      merge_blank_fields: false
+      group_connectors: false
+      columns:
+        - field: References
+          name: References
+        - field: Quantity Per PCB
+          name: Qty
+        - field: Value
+          name: Value
+        - field: Footprint
+          name: Footprint
+        - field: Manufacturer Part Number
+          name: MPN
+        - field: Manufacturer
+          name: Manufacturer
+        - field: Status
+          name: Status
+      csv:
+        hide_pcb_info: true
+        hide_stats_info: true
+        hide_header: false
+        separator: ','
+
+# ----------------------------------------------------------------------------
+
+  - name: pcb_assembly_pdf
+    comment: Assembly drawing
+    type: pcb_print
+    dir: assembly
+    options:
+      exclude_filter: _mechanical
+      output: '%f-pcb-assembly.%x'
+      format: PDF
+      title: assembly drawing
+      sheet_reference_layout: ''
+      plot_sheet_reference: true
+      frame_plot_mechanism: internal
+      force_edge_cuts: false
+      colored_pads: false
+      colored_vias: false
+      realistic_solder_mask: true
+      dpi: 1200
+      scaling: 1.0
+      include_table:
+        group_name: kibot_assy_table
+        outputs:
+          - name: parts_count_top
+            text_alignment: left
+            invert_columns_order: false
+            border_width: 0.4
+            header_rule_width: 0.2
+            horizontal_rule_width: 0
+            vertical_rule_width: 0.2
+            top_rule_width: 0.2
+            bottom_rule_width: 0.2
+            row_spacing: 3
+            column_spacing: 2
+            force_font_width: 1.0
+
+          - name: parts_count_bottom
+            text_alignment: right
+            invert_columns_order: true
+            border_width: 0.4
+            header_rule_width: 0.2
+            horizontal_rule_width: 0
+            vertical_rule_width: 0.2
+            top_rule_width: 0.2
+            bottom_rule_width: 0.2
+            row_spacing: 3
+            column_spacing: 2
+            force_font_width: 1.0
+
+      pages:
+        - sheet: 'Assembly overview'
+          layer_var: ''
+          sheet_reference_color: '#000000'
+          layers: @OVERVIEW_LAYERS_@RENDER_MODE@@
+
+        - sheet: 'Top assembly (Scale 1:1)'
+          layer_var: 'Top assembly (Scale 1:1)'
+          sheet_reference_color: '#000000'
+          colored_holes: true
+          holes_color: '#FFFFFF'
+          layers:
+            - layer: F.Cu
+              color: '#F3E2D2'
+            - layer: F.Mask
+              color: '@PDF_MASK_TOP@'
+            - layer: F.Paste
+              color: '#BDBDBD'
+            - layer: F.Fab
+              color: '#000000'
+            - layer: Edge.Cuts
+              color: '#000000'
+            - layer: AssyDNPTop
+              color: '#C62828'
+            @IMAGE_COMMENT_@RENDER_MODE@@- {layer: AssemblyTop, color: '#000000'}
+
+        - sheet: 'Bottom assembly (Scale 1:1)'
+          layer_var: 'Bottom assembly (Scale 1:1)'
+          mirror: true
+          mirror_pcb_text: true
+          sheet_reference_color: '#000000'
+          colored_holes: true
+          holes_color: '#FFFFFF'
+          layers:
+            - layer: B.Cu
+              color: '#F3E2D2'
+            - layer: B.Mask
+              color: '@PDF_MASK_BOTTOM@'
+            - layer: B.Paste
+              color: '#BDBDBD'
+            - layer: B.Fab
+              color: '#000000'
+            - layer: Edge.Cuts
+              color: '#000000'
+            - layer: AssyDNPBottom
+              color: '#C62828'
+            @IMAGE_COMMENT_@RENDER_MODE@@- {layer: AssemblyBottom, color: '#000000'}
+
+# For remaining pages (BOM):
+#     select the desired ASSEMBLY_BOM_MODE (end of this document)
+#     see append_assembly_bom_v5.py under /scripts for more details
+
+# ----------------------------------------------------------------------------
+
+  - name: testpoints_pdf
+    comment: Testpoint drawing
+    type: pcb_print
+    dir: assembly
+    options:
+      exclude_filter: _none
+      output: '%f-testpoints.%x'
+      format: PDF
+      title: testpoint drawing
+      sheet_reference_layout: ''
+      plot_sheet_reference: true
+      frame_plot_mechanism: internal
+      force_edge_cuts: false
+      colored_pads: false
+      colored_vias: false
+      realistic_solder_mask: false
+      scaling: 1.0
+      dpi: 1200
+
+      pages:
+        - sheet: 'Top testpoints (scale 1:1)'
+          layer_var: 'Top testpoints (scale 1:1)'
+          sheet_reference_color: '#000000'
+          colored_holes: true
+          holes_color: '#FFFFFF'
+          layers:
+            - layer: F.Cu
+              color: '#F4F4F4'
+            - layer: F.Paste
+              color: '#E5E5E5'
+            - layer: F.Fab
+              color: '#707070'
+              plot_footprint_values: false
+            - layer: Edge.Cuts
+              color: '#000000'
+            - layer: F.CrtYd
+              color: '#C62828'
+              exclude_filter: keep_only_testpoints
+              plot_footprint_refs: false
+              plot_footprint_values: false
+              sketch_pads_on_fab_layers: false
+            - layer: F.Fab
+              color: '#C62828'
+              exclude_filter: keep_only_testpoints
+              plot_footprint_refs: true
+              plot_footprint_values: false
+              sketch_pads_on_fab_layers: false
+            - layer: TestpointsTop
+              color: '#C62828'
+
+        - sheet: 'Bottom testpoints (scale 1:1)'
+          layer_var: 'Bottom testpoints (scale 1:1)'
+          mirror: true
+          mirror_pcb_text: false
+          sheet_reference_color: '#000000'
+          colored_holes: true
+          holes_color: '#FFFFFF'
+          layers:
+            - layer: B.Cu
+              color: '#F4F4F4'
+            - layer: B.Paste
+              color: '#E5E5E5'
+            - layer: B.Fab
+              color: '#707070'
+              plot_footprint_values: false
+            - layer: Edge.Cuts
+              color: '#000000'
+            - layer: B.CrtYd
+              color: '#1565C0'
+              exclude_filter: keep_only_testpoints
+              plot_footprint_refs: false
+              plot_footprint_values: false
+              sketch_pads_on_fab_layers: false
+            - layer: B.Fab
+              color: '#1565C0'
+              exclude_filter: keep_only_testpoints
+              plot_footprint_refs: true
+              plot_footprint_values: false
+              sketch_pads_on_fab_layers: false
+            - layer: TestpointsBottom
+              color: '#1565C0'
+            - layer: F.CrtYd
+              color: '#1565C0'
+              exclude_filter: keep_only_testpoints
+              plot_footprint_refs: false
+              plot_footprint_values: false
+              sketch_pads_on_fab_layers: false
+
+# ----------------------------------------------------------------------------
+
+  - name: fabrication_gerbers
+    type: gerber
+    dir: fabrication/gerber
+    layers:
+      - copper
+      - F.Paste
+      - B.Paste
+      - F.SilkS
+      - B.SilkS
+      - F.Mask
+      - B.Mask
+      - Edge.Cuts
+    options:
+      use_protel_extensions: true
+      create_gerber_job_file: true
+
+# ----------------------------------------------------------------------------
+
+  - name: fabrication_drills
+    type: excellon
+    dir: fabrication/drill
+    options:
+      metric_units: true
+      pth_and_npth_single_file: false
+
+# ----------------------------------------------------------------------------
+
+  - name: bom_csv
+    type: bom
+    dir: assembly/bom
+    options:
+      format: CSV
+
+# ----------------------------------------------------------------------------
+
+  - name: bom_xlsx
+    type: bom
+    dir: assembly/bom
+    options:
+      format: XLSX
+
+# ----------------------------------------------------------------------------
+
+  - name: interactive_bom
+    comment: HTML iBOM
+    type: ibom
+    dir: assembly/bom
+    options:
+      dark_mode: true
+      highlight_pin1: "selected"
+
+
+# ----------------------------------------------------------------------------
+
+  - name: pick_and_place
+    comment: Pick and place file
+    type: position
+    dir: assembly/PnP
+    options:
+      format: CSV
+      units: millimeters
+      only_smd: true
+      separate_files_for_front_and_back: true
+      use_aux_axis_as_origin: false
+
+# ----------------------------------------------------------------------------
+
+  - name: board_step
+    type: export_3d
+    dir: 3d
+    options:
+      format: step
+
+# ----------------------------------------------------------------------------
+
+  - name: fabrication_zip
+    comment: Fabrication package
+    type: compress
+    dir: packages
+    run_by_default: @ZIP_ENABLED@
+    options:
+      format: ZIP
+      output: '%f-fabrication.zip'
+      files:
+        - source: 'fabrication/gerber/*'
+          dest: gerber
+        - source: 'fabrication/drill/*'
+          dest: drill
+        - source: 'fabrication/*-pcb-fabrication.pdf'
+          dest: documentation
+        - source: 'reports/*-drc.*'
+          dest: reports
+
+  - name: assembly_zip
+    comment: Assembly package
+    type: compress
+    dir: packages
+    run_by_default: @ZIP_ENABLED@
+    options:
+      format: ZIP
+      output: '%f-assembly.zip'
+      files:
+        - source: 'assembly/bom/*'
+          dest: bom
+        - source: 'assembly/PnP/*'
+          dest: placement
+        - source: 'assembly/*-pcb-assembly.pdf'
+          dest: documentation
+        - source: 'reports/*-drc.*'
+          dest: reports
+
+# ----------------------------------------------------------------------------
+
+  - name: pcb_revision_diff
+    comment: PCB changes from the reference revision
+    type: diff
+    dir: reports/diffs
+    run_by_default: @DIFF_ENABLED@
+    layers:
+      - copper
+      - Edge.Cuts
+    options:
+      pcb: true
+      old_type: git
+      old: '@DIFF_BASE_REF@'
+      new_type: current
+      output: '%f-pcb-changes.%x'
+      only_different: true
+
+# ----------------------------------------------------------------------------
+
+  - name: schematic_revision_diff
+    comment: Schematic changes from the reference revision
+    type: diff
+    dir: reports/diffs
+    run_by_default: @DIFF_ENABLED@
+    options:
+      pcb: false
+      old_type: git
+      old: '@DIFF_BASE_REF@'
+      new_type: current
+      only_first_sch_page: false
+      output: '%f-schematic-changes.%x'
+      only_different: true
+
+# ----------------------------------------------------------------------------
+
+  - name: html_index
+    comment: Browse generated project files
+    type: navigate_results
+    dir: reports/browse
+    priority: 0
+    options:
+      output: index.html
+      link_from_root: index.html
+      skip_not_run: true
+
+...
+definitions:
+  ZIP_ENABLED: 'false'  # true: generate mfg ZIPs; false: skip ZIPs
+
+  ASSEMBLY_BOM_MODE: 'separate'  # Chose between no bom, combined, separate and fitted:
+    # no bom (BOM is not appended)
+    # combined (fitted and DNP parts are shown on the same table)
+    # separate (fitted and DNP parts are shown on separate tables)
+    # fitted (only fitted parts are shown)
+
+  DIFF_ENABLED: 'false'  # For a comparison, change DIFF_ENABLED to 'true'
+  DIFF_BASE_REF: 'HEAD'  # and set DIFF_BASE_REF to a commit hash or Git tag
+
+  RENDER_MODE: 'mid'  # Chose bw disabled, low, mid, high ('disabled' leaves blank the places where renders are expected in the pdf files)
+
+
+
+
+
+  RENDER_RUN_disabled: 'false'
+  RENDER_RUN_low: 'true'
+  RENDER_RUN_mid: 'true'
+  RENDER_RUN_high: 'true'
+
+  IMAGE_COMMENT_disabled: '#'
+  IMAGE_COMMENT_low: ''
+  IMAGE_COMMENT_mid: ''
+  IMAGE_COMMENT_high: ''
+
+  OVERVIEW_LAYERS_disabled: '[]'
+  OVERVIEW_LAYERS_low: '[{layer: AssemblyOverview, color: "#000000"}]'
+  OVERVIEW_LAYERS_mid: '[{layer: AssemblyOverview, color: "#000000"}]'
+  OVERVIEW_LAYERS_high: '[{layer: AssemblyOverview, color: "#000000"}]'
+
+  RENDER_SAMPLES_disabled: '1'
+  RENDER_SAMPLES_low: '1'
+  RENDER_SAMPLES_mid: '4'
+  RENDER_SAMPLES_high: '8'
+
+  RENDER_WIDTH_disabled: '100'
+  RENDER_WIDTH_low: '200'
+  RENDER_WIDTH_mid: '1000'
+  RENDER_WIDTH_high: '2000'
+
+  RENDER_HEIGHT_disabled: '100'
+  RENDER_HEIGHT_low: '200'
+  RENDER_HEIGHT_mid: '1000'
+  RENDER_HEIGHT_high: '2000'
+
+  FAB_OVERVIEW_LAYERS_disabled: '[]'
+  FAB_OVERVIEW_LAYERS_low: '[{layer: FabricationRender, color: "#000000"}]'
+  FAB_OVERVIEW_LAYERS_mid: '[{layer: FabricationRender, color: "#000000"}]'
+  FAB_OVERVIEW_LAYERS_high: '[{layer: FabricationRender, color: "#000000"}]'
+
+

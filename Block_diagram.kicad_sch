@@ -1,0 +1,179 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "c9e7b9a6-62b2-48f6-a551-66a35aaefe25")
+	(paper "A4")
+	(title_block
+		(date "2026-10-06")
+		(rev "1.0.0")
+	)
+	(lib_symbols)
+	(text "Return to front sheet"
+		(exclude_from_sim no)
+		(at 12.7 197.485 0)
+		(effects
+			(font
+				(face "DejaVu Sans")
+				(size 2.032 2.032)
+				(thickness 0.3175)
+				(color 0 0 194 1)
+			)
+			(justify left bottom)
+			(href "#1")
+		)
+		(uuid "91b672d7-d68e-44ef-88e2-79e19d2498ad")
+	)
+	(wire
+		(pts
+			(xy 165.1 60.96) (xy 177.8 60.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "458f67b3-2d3e-4d90-9d6c-b3cb9fe8babe")
+	)
+	(wire
+		(pts
+			(xy 165.1 77.47) (xy 177.8 77.47)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "68eb0afa-bf81-455e-b849-54dde8113304")
+	)
+	(sheet
+		(at 177.8 50.8)
+		(size 50.8 38.1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 255 229 191 1)
+		)
+		(uuid "45423d9b-a161-4bac-8a91-6c24c243381d")
+		(property "Sheetname" "Childsheet_2_example"
+			(at 177.8 50.0884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Childsheet_2_example.kicad_sch"
+			(at 177.8 89.4846 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "Signal1" input
+			(at 177.8 60.96 180)
+			(uuid "c5dc644b-f9d2-44d4-a1e9-58f8fecdd13b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "Signal2" output
+			(at 177.8 77.47 180)
+			(uuid "d5fc746e-c140-4a47-91a5-a07471cab6f7")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(instances
+			(project "KiCad_starter"
+				(path "/f14ff7c3-fe34-4697-84b8-3cc06a5a3565/8691f566-486a-4ca4-ac00-06f17a09aade/75753c83-0606-4e75-9e41-6be2b05a7146"
+					(page "6")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 114.3 50.8)
+		(size 50.8 139.7)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 255 229 191 1)
+		)
+		(uuid "46f55883-3a35-4b87-b726-ff148fa37feb")
+		(property "Sheetname" "Childsheet_1_example"
+			(at 114.3 50.0884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Childsheet_1_example.kicad_sch"
+			(at 114.3 191.0846 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "Signal1" output
+			(at 165.1 60.96 0)
+			(uuid "20acb90f-2a02-4074-b6d3-f101594d7196")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "Signal2" input
+			(at 165.1 77.47 0)
+			(uuid "77f7c53d-127f-4f13-8a0f-eddcd9c89143")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(instances
+			(project "KiCad_starter"
+				(path "/f14ff7c3-fe34-4697-84b8-3cc06a5a3565/8691f566-486a-4ca4-ac00-06f17a09aade/75753c83-0606-4e75-9e41-6be2b05a7146"
+					(page "5")
+				)
+			)
+		)
+	)
+)

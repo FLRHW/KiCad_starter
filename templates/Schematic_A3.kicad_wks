@@ -1,0 +1,388 @@
+(kicad_wks
+	(version 20231118)
+	(generator "pl_editor")
+	(generator_version "10.0")
+	(setup
+		(textsize 1.5 1.5)
+		(linewidth 0.15)
+		(textlinewidth 0.15)
+		(left_margin 10)
+		(right_margin 10)
+		(top_margin 10)
+		(bottom_margin 10)
+	)
+	(rect
+		(name "")
+		(start 101 23.5)
+		(end 2 2)
+		(comment "title block")
+	)
+	(rect
+		(name "")
+		(start 0 0 ltcorner)
+		(end 0 0)
+		(repeat 2)
+		(incrx 2)
+		(incry 2)
+	)
+	(line
+		(name "")
+		(start 50 2 ltcorner)
+		(end 50 0 ltcorner)
+		(repeat 30)
+		(incrx 50)
+	)
+	(tbtext "1"
+		(name "")
+		(pos 25 1 ltcorner)
+		(font
+			(size 1.3 1.3)
+		)
+		(repeat 100)
+		(incrx 50)
+	)
+	(line
+		(name "")
+		(start 50 2 lbcorner)
+		(end 50 0 lbcorner)
+		(repeat 30)
+		(incrx 50)
+	)
+	(tbtext "1"
+		(name "")
+		(pos 25 1 lbcorner)
+		(font
+			(size 1.3 1.3)
+		)
+		(repeat 100)
+		(incrx 50)
+	)
+	(line
+		(name "")
+		(start 0 50 ltcorner)
+		(end 2 50 ltcorner)
+		(repeat 30)
+		(incry 50)
+	)
+	(tbtext "A"
+		(name "")
+		(pos 1 25 ltcorner)
+		(font
+			(size 1.3 1.3)
+		)
+		(justify center)
+		(repeat 100)
+		(incry 50)
+	)
+	(line
+		(name "")
+		(start 0 50 rtcorner)
+		(end 2 50 rtcorner)
+		(repeat 30)
+		(incry 50)
+	)
+	(tbtext "A"
+		(name "")
+		(pos 1 25 rtcorner)
+		(font
+			(size 1.3 1.3)
+		)
+		(justify center)
+		(repeat 100)
+		(incry 50)
+	)
+	(tbtext "Date: ${ISSUE_DATE}"
+		(name "")
+		(pos 39 9.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "Generated with KiCad"
+		(name "")
+		(pos 39 3.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "Rev:"
+		(name "")
+		(pos 39 15.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "Size:"
+		(name "")
+		(pos 16.5 6.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+		(comment "Paper format name")
+	)
+	(tbtext "Page: ${#}/${##}"
+		(name "")
+		(pos 16.5 3.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+		(comment "Sheet id")
+	)
+	(tbtext "File:"
+		(name "")
+		(pos 39 18.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "Sheet: ${SHEETNAME}"
+		(name "")
+		(pos 39 21.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "${COMMENT1}"
+		(name "")
+		(pos 83 12.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1 1)
+			(color 0 0 0 1)
+		)
+		(comment "Comment 0")
+	)
+	(tbtext "${COMMENT2}"
+		(name "")
+		(pos 83 9.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1 1)
+			(color 0 0 0 1)
+		)
+		(comment "Comment 1")
+	)
+	(tbtext "${COMMENT3}"
+		(name "")
+		(pos 83 6.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1 1)
+			(color 0 0 0 1)
+		)
+		(comment "Comment 2")
+	)
+	(tbtext "${COMMENT4}"
+		(name "")
+		(pos 83 3.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1 1)
+			(color 0 0 0 1)
+		)
+		(comment "Comment 3")
+	)
+	(tbtext "Notes"
+		(name "")
+		(pos 83 15.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2) bold
+			(color 0 0 0 1)
+		)
+		(comment "Comment 0")
+	)
+	(tbtext "${MATURITY}"
+		(name "")
+		(pos 33.75 12.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "${DRAWN}"
+		(name "")
+		(pos 10.5 15.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "${REVIEWED}"
+		(name "")
+		(pos 10.5 12.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "Rls'd:"
+		(name "")
+		(pos 16.5 9.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "${PROJECT}"
+		(name "")
+		(pos 83 20)
+		(font
+			(face "DejaVu Sans")
+			(size 2 2) bold
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "Drwn:"
+		(name "")
+		(pos 16.5 15.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "Rev'd:"
+		(name "")
+		(pos 16.5 12.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "${RELEASED}"
+		(name "")
+		(pos 10.5 9.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "${FILENAME}"
+		(name "")
+		(pos 32.75 18.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "${DRAWING_NUMBER}"
+		(name "")
+		(pos 33.75 6.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "Dwg:"
+		(name "")
+		(pos 39 6.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "${REVISION}"
+		(name "")
+		(pos 33.75 15.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "Mat:"
+		(name "")
+		(pos 39 12.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+	)
+	(tbtext "${PAPER}"
+		(name "")
+		(pos 10.5 6.5)
+		(font
+			(face "DejaVu Sans")
+			(size 1.2 1.2)
+			(color 0 0 0 1)
+		)
+		(comment "Paper format name")
+	)
+	(line
+		(name "")
+		(start 84 2)
+		(end 84 23.5)
+	)
+	(line
+		(name "")
+		(start 84 17)
+		(end 2 17)
+	)
+	(line
+		(name "")
+		(start 40 2)
+		(end 40 23.5)
+	)
+	(line
+		(name "")
+		(start 17.5 2)
+		(end 17.5 17)
+	)
+	(line
+		(name "")
+		(start 40 8)
+		(end 2 8)
+	)
+	(line
+		(name "")
+		(start 40 5)
+		(end 2 5)
+	)
+	(tbtext "${PROJECT}"
+		(name "")
+		(pos 4.572 4.572 ltcorner)
+		(option page1only)
+		(font
+			(face "DejaVu Sans")
+			(size 5.08 5.08) bold
+			(color 0 0 0 1)
+		)
+		(justify top)
+	)
+	(tbtext "${SHEETNAME}"
+		(name "")
+		(pos 3.429 4.572 rtcorner)
+		(option notonpage1)
+		(font
+			(face "DejaVu Sans")
+			(size 4.064 4.064) bold
+			(color 0 0 0 1)
+		)
+		(justify right top)
+	)
+)
