@@ -854,7 +854,7 @@ definitions:
   DIFF_ENABLED: 'false'  # For a comparison, change DIFF_ENABLED to 'true'
   DIFF_BASE_REF: 'HEAD'  # and set DIFF_BASE_REF to a commit hash or Git tag
 
-  RENDER_MODE: 'mid'  # Chose bw disabled, low, mid, high ('disabled' leaves blank the places where renders are expected in the pdf files)
+  RENDER_MODE: 'low'  # Chose bw disabled, low, mid, high ('disabled' leaves blank the places where renders are expected in the pdf files)
 
 
 
@@ -881,12 +881,12 @@ definitions:
   RENDER_SAMPLES_high: '8'
 
   RENDER_WIDTH_disabled: '100'
-  RENDER_WIDTH_low: '200'
+  RENDER_WIDTH_low: '400'
   RENDER_WIDTH_mid: '1000'
   RENDER_WIDTH_high: '2000'
 
   RENDER_HEIGHT_disabled: '100'
-  RENDER_HEIGHT_low: '200'
+  RENDER_HEIGHT_low: '400'
   RENDER_HEIGHT_mid: '1000'
   RENDER_HEIGHT_high: '2000'
 
