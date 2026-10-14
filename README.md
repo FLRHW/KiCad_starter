@@ -44,7 +44,21 @@ Depending on the configuration toggles, CI generates:
 
 ## Install the KiCad template
 
-1. Clone or download this repository into a folder under your user template
+**Option A - Use your existing KiCad user-template folder**
+
+1. In KiCad, open **Preferences → Configure Paths** and find
+   `KICAD_USER_TEMPLATE_DIR`. If it is unset, use Option B.
+
+2. Clone the repository inside that directory:
+
+   ```bash
+   cd "/path/to/your/KiCad/user/templates"
+   git clone https://github.com/FLRHW/KiCad_starter.git
+   ```
+
+**Option B - Use a dedicated user templates folder**
+
+1. Clone this repository into a folder under your user template
    directory. For example, on Linux:
 
    ```bash
@@ -56,37 +70,40 @@ Depending on the configuration toggles, CI generates:
    `KICAD_USER_TEMPLATE_DIR` to the parent folder, such as
    `/home/your-user/KiCadTemplates`. Leave the system template path unchanged.
 
-3. Choose **File → New Project…** and select **FLRHW KiCad Starter**.
-
-4. Choose the new project name and location. KiCad renames the root project,
-   schematic, PCB and rules files; the example child-sheet filenames remain
-   unchanged.
-
 `meta/info.html` and `meta/icon.png` provide the template description and icon.
 The `templates/` folder contains drawing worksheets; it is a different folder
 from the directory used to install project templates.
 
-## Set up a newly created project
+## Create a new project and set it up
 
-Before opening the new project's schematic or PCB editors, open a terminal in
-its root folder and run:
+1. In KiCad choose **File → New Project…** and select **FLRHW KiCad Starter**.
 
-```bash
-python3 scripts/setup_project.py
-```
+2. Choose the new project name and location. KiCad renames the root project,
+   schematic, PCB and rules files; the example child-sheet filenames remain
+   unchanged.
 
-On Windows, `py scripts/setup_project.py` may be used instead.
+3. **Do not yet open the schematic or PCB editors.** Open a terminal in the new
+   project's root folder and run:
+
+   ```bash
+   python3 scripts/setup_project.py
+   ```
+
+   On Windows, `py scripts/setup_project.py` may be used instead.
+   Keep the schematic and PCB editors closed while running setup. If they were
+   opened and saved beforehand, the script may detect both old and new
+   project-instance records and stop for review.
+
+4. Open the new `.kicad_pro` file, check the hierarchy, save the design and run
+   local ERC/DRC. The example hierarchy includes a cover page, system overview,
+   block diagram, interface example and two circuit examples. Adapt or delete the
+   examples through KiCad before removing their unused files from disk.
 
 The setup script updates internal project-name records and installs the workflow
 from `ci/workflows/` into `.github/workflows/`. This is required because KiCad
 does not copy the hidden `.github/` folder when creating a project from a template.
 Running setup again is safe when the files already match. It refuses to overwrite
 a different existing workflow unless you explicitly use `--force`.
-
-Then open the new `.kicad_pro` file, check the hierarchy, save the design and run
-local ERC/DRC. The example hierarchy includes a cover page, system overview,
-block diagram, interface example and two circuit examples. Adapt or delete the
-examples through KiCad before removing their unused files from disk.
 
 The workflow expects exactly one `.kicad_pcb` in the project root and a matching
 root `.kicad_sch`. Hierarchical child sheets are supported.
@@ -179,6 +196,7 @@ Consequently, moving a light farther along the same direction in the YAML
 does not reduce its brightness: the script overrides that distance.
 
 Light energy is handled separately:
+
 - `energy: @AUTO_LIGHT_ENERGY@` uses board-size compensation calculated by
   the workflow.
 - A numeric energy value remains fixed.
@@ -201,6 +219,7 @@ cannot necessarily be removed or disabled independently.
 
 Before changing an output's name, path or enabled state, check its references
 in:
+
 - `config.kibot.yaml`, including PDF images, tables and package definitions.
 - The workflow's output-selection and exclusion lists.
 - The helper scripts, especially `finalize_pdfs.py`.
@@ -210,6 +229,7 @@ may still be requested explicitly by another output or script. Removing its
 definition can invalidate those requests and cause CI to fail.
 
 Important dependencies:
+
 - PDF finalisation requires the assembly PDF and both ERC/DRC JSON reports.
 - Unless `ASSEMBLY_BOM_MODE` is `no bom`, it also requires the top and bottom
   assembly BOM CSVs under `output/tables/`. Keep their configured columns,
@@ -282,6 +302,10 @@ scale label together when needed.
 Generated outputs are intentionally tracked in project repositories. Keep
 `output/` out of their `.gitignore`. Remove generated outputs from the starter
 before distributing it or creating new projects.
+
+In the starter repository itself, CI uploads generated outputs as artifacts but
+does not commit them, identified by the presence of `meta/info.html`. Projects
+created through KiCad omit `meta/`, so their CI commits outputs normally.
 
 Open `output/index.html` to browse generated files.
 
@@ -361,8 +385,8 @@ provided as is, without warranty, under the terms of LICENSE.
 
 ## Credits and acknowledgements
 
-Development of this template was AI assisted, including work on configuration, 
-helper scripts, documentation and troubleshooting. Project decisions and testing 
+Development of this template was AI assisted, including work on configuration,
+helper scripts, documentation and troubleshooting. Project decisions and testing
 were carried out by FLRHW.
 
 This template relies on the work of many open-source contributors:
@@ -382,4 +406,3 @@ This template relies on the work of many open-source contributors:
   [PCB2Blender](https://github.com/30350n/pcb2blender): board rendering.
 - [GitHub Actions](https://github.com/features/actions) and its action authors:
   CI execution, checkout and artifact handling.
-
