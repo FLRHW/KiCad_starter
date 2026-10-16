@@ -9,6 +9,10 @@ same branch. Retrieve the results with `git pull`.
 
 Repository: [FLRHW/KiCad_starter](https://github.com/FLRHW/KiCad_starter).
 
+Example project: [Desk_controller](https://github.com/FLRHW/Desk_controller),
+a project created from this template, with generated documentation and
+manufacturing outputs.
+
 ## Requirements
 
 - KiCad 10 installed locally, with its standard symbol and footprint libraries.
@@ -19,6 +23,12 @@ Repository: [FLRHW/KiCad_starter](https://github.com/FLRHW/KiCad_starter).
 Docker and KiBot do not need to be installed locally. The workflow runs them on
 a GitHub-hosted Ubuntu runner. Local KiCad and CI KiCad patch versions can differ;
 the CI build report records the version that generated the outputs.
+
+**Tested versions:** Local project creation and editing have been tested with
+**KiCad 10.0.6 on Linux**. The pinned CI image uses **KiBot 1.9.1** and
+**KiCad 10.0.5**. These are the tested versions, rather than a requirement that
+local and CI KiCad patch versions match. Each run records its CI tool versions
+in `output/reports/build-info.txt`.
 
 **Platform testing:** This template has been tested only on Linux. Local project
 creation and setup are expected to work on Windows with KiCad 10, Python 3 and Git,
