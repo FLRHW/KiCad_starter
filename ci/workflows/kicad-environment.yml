@@ -14,6 +14,12 @@ jobs:
   verify-tools:
     runs-on: ubuntu-24.04
     timeout-minutes: 50
+    container:
+      # Keep this digest identical to KICAD_CI_IMAGE above (recorded in build-info.txt).
+      image: ghcr.io/flrhw/kibot-kicad10@sha256:dd3b846da945f204fa7b61916df34a99170b2a2095b49c3879cd96d414b8a7b8
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Check out repository
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
@@ -22,138 +28,126 @@ jobs:
 
       - name: Check KiCad, KiBot and pcbnew
         run: |
-          docker run --rm \
-            --entrypoint /bin/bash \
-            "$KICAD_CI_IMAGE" \
-            -lc 'set -e; kicad-cli version; kibot --version; /usr/bin/python3 -c "import pcbnew; print(pcbnew.GetBuildVersion())"'
+          kicad-cli version
+          kibot --version
+          /usr/bin/python3 -c "import pcbnew; print(pcbnew.GetBuildVersion())"
 
       - name: Run KiBot
         run: |
-          docker run --rm \
-            -v "$PWD:/work" -w /work \
-            --entrypoint /bin/bash \
-            "$KICAD_CI_IMAGE" \
-            -lc '
-              set -e
+          set -e
 
-              mkdir -p /root/.config/kicad/10.0/colors
+          mkdir -p "$HOME/.config/kicad/10.0/colors"
 
-              cp ci/kicad/eeschema.json ci/kicad/pcbnew.json \
-                /root/.config/kicad/10.0/
+          cp ci/kicad/eeschema.json ci/kicad/pcbnew.json \
+            "$HOME/.config/kicad/10.0/"
 
-              cp ci/kicad/colors/user.json \
-                /root/.config/kicad/10.0/colors/
+          cp ci/kicad/colors/user.json \
+            "$HOME/.config/kicad/10.0/colors/"
 
-              schematic_font=$(/usr/bin/python3 -c "import json; print(json.load(open(\"ci/kicad/eeschema.json\"))[\"appearance\"][\"default_font\"])")
-              schematic_theme=$(/usr/bin/python3 -c "import json; print(json.load(open(\"ci/kicad/eeschema.json\"))[\"appearance\"][\"color_theme\"])")
+          schematic_font=$(/usr/bin/python3 -c "import json; print(json.load(open(\"ci/kicad/eeschema.json\"))[\"appearance\"][\"default_font\"])")
+          schematic_theme=$(/usr/bin/python3 -c "import json; print(json.load(open(\"ci/kicad/eeschema.json\"))[\"appearance\"][\"color_theme\"])")
 
-              /usr/bin/python3 scripts/configure_blender_materials.py
+          /usr/bin/python3 scripts/configure_blender_materials.py
 
-              set -- *.kicad_pcb
-              if [ "$#" -ne 1 ] || [ ! -f "$1" ]; then
-                echo "Expected exactly one .kicad_pcb file in the project root"
-                exit 1
-              fi
+          set -- *.kicad_pcb
+          if [ "$#" -ne 1 ] || [ ! -f "$1" ]; then
+            echo "Expected exactly one .kicad_pcb file in the project root"
+            exit 1
+          fi
 
-              pcb_file="$1"
-              sch_file="${pcb_file%.kicad_pcb}.kicad_sch"
+          pcb_file="$1"
+          sch_file="${pcb_file%.kicad_pcb}.kicad_sch"
 
-              if [ ! -f "$sch_file" ]; then
-                echo "Matching schematic not found: $sch_file"
-                exit 1
-              fi
+          if [ ! -f "$sch_file" ]; then
+            echo "Matching schematic not found: $sch_file"
+            exit 1
+          fi
 
-              light_energy=$(/usr/bin/python3 -c "import sys, pcbnew; board=pcbnew.LoadBoard(sys.argv[1]); box=board.ComputeBoundingBox(True); size_mm=pcbnew.ToMM(max(box.GetWidth(), box.GetHeight())); print(0.1 * (size_mm / 25.0)**2)" "$pcb_file")
-              echo "Calculated AREA light energy: $light_energy"
+          light_energy=$(/usr/bin/python3 -c "import sys, pcbnew; board=pcbnew.LoadBoard(sys.argv[1]); box=board.ComputeBoundingBox(True); size_mm=pcbnew.ToMM(max(box.GetWidth(), box.GetHeight())); print(0.1 * (size_mm / 25.0)**2)" "$pcb_file")
+          echo "Calculated AREA light energy: $light_energy"
 
-              mask_colours=$(/usr/bin/python3 scripts/pdf_mask_colours.py \
-                --pcb "$pcb_file" \
-                --lighten 0.75 \
-                --opacity 0.50)
-              read -r pdf_mask_top pdf_mask_bottom <<< "$mask_colours"
+          mask_colours=$(/usr/bin/python3 scripts/pdf_mask_colours.py \
+            --pcb "$pcb_file" \
+            --lighten 0.75 \
+            --opacity 0.50)
+          read -r pdf_mask_top pdf_mask_bottom <<< "$mask_colours"
 
-              mkdir -p output/reports
+          mkdir -p output/reports
 
-              kibot \
-                -E AUTO_LIGHT_ENERGY="$light_energy" \
-                -E PDF_MASK_TOP="$pdf_mask_top" \
-                -E PDF_MASK_BOTTOM="$pdf_mask_bottom" \
-                -E SCHEMATIC_FONT="$schematic_font" \
-                -E SCHEMATIC_THEME="$schematic_theme" \
-                -c config.kibot.yaml \
-                -e "$sch_file" \
-                -b "$pcb_file" \
-                -d output \
-                --invert-sel fabrication_zip assembly_zip html_index
+          kibot \
+            -E AUTO_LIGHT_ENERGY="$light_energy" \
+            -E PDF_MASK_TOP="$pdf_mask_top" \
+            -E PDF_MASK_BOTTOM="$pdf_mask_bottom" \
+            -E SCHEMATIC_FONT="$schematic_font" \
+            -E SCHEMATIC_THEME="$schematic_theme" \
+            -c config.kibot.yaml \
+            -e "$sch_file" \
+            -b "$pcb_file" \
+            -d output \
+            --invert-sel fabrication_zip assembly_zip html_index
 
-              /usr/bin/python3 scripts/finalize_pdfs.py \
-                --pcb "$pcb_file" \
-                --sch "$sch_file" \
-                --config config.kibot.yaml \
-                --define "AUTO_LIGHT_ENERGY=$light_energy" \
-                --define "PDF_MASK_TOP=$pdf_mask_top" \
-                --define "PDF_MASK_BOTTOM=$pdf_mask_bottom" \
-                --define "SCHEMATIC_FONT=$schematic_font" \
-                --define "SCHEMATIC_THEME=$schematic_theme" \
-                --output-dir output
+          /usr/bin/python3 scripts/finalize_pdfs.py \
+            --pcb "$pcb_file" \
+            --sch "$sch_file" \
+            --config config.kibot.yaml \
+            --define "AUTO_LIGHT_ENERGY=$light_energy" \
+            --define "PDF_MASK_TOP=$pdf_mask_top" \
+            --define "PDF_MASK_BOTTOM=$pdf_mask_bottom" \
+            --define "SCHEMATIC_FONT=$schematic_font" \
+            --define "SCHEMATIC_THEME=$schematic_theme" \
+            --output-dir output
 
-              kibot \
-                -s all \
-                -E AUTO_LIGHT_ENERGY="$light_energy" \
-                -E PDF_MASK_TOP="$pdf_mask_top" \
-                -E PDF_MASK_BOTTOM="$pdf_mask_bottom" \
-                -E SCHEMATIC_FONT="$schematic_font" \
-                -E SCHEMATIC_THEME="$schematic_theme" \
-                -c config.kibot.yaml \
-                -e "$sch_file" \
-                -b "$pcb_file" \
-                -d output \
-                --invert-sel \
-                schematic_pdf drillmap pcb_fabrication_pdf testpoints_pdf \
-                parts_count_top parts_count_bottom \
-                assembly_bom_top assembly_bom_bottom pcb_assembly_pdf \
-                fabrication_gerbers fabrication_drills \
-                bom_csv bom_xlsx interactive_bom pick_and_place board_step \
-                blender_render blender_top blender_bottom \
-                blender_angled_top blender_angled_bottom \
-                blender_bare_top blender_bare_bottom \
-                pcb_revision_diff schematic_revision_diff
-            '
+          kibot \
+            -s all \
+            -E AUTO_LIGHT_ENERGY="$light_energy" \
+            -E PDF_MASK_TOP="$pdf_mask_top" \
+            -E PDF_MASK_BOTTOM="$pdf_mask_bottom" \
+            -E SCHEMATIC_FONT="$schematic_font" \
+            -E SCHEMATIC_THEME="$schematic_theme" \
+            -c config.kibot.yaml \
+            -e "$sch_file" \
+            -b "$pcb_file" \
+            -d output \
+            --invert-sel \
+            schematic_pdf drillmap pcb_fabrication_pdf testpoints_pdf \
+            parts_count_top parts_count_bottom \
+            assembly_bom_top assembly_bom_bottom pcb_assembly_pdf \
+            fabrication_gerbers fabrication_drills \
+            bom_csv bom_xlsx interactive_bom pick_and_place board_step \
+            blender_render blender_top blender_bottom \
+            blender_angled_top blender_angled_bottom \
+            blender_bare_top blender_bare_bottom \
+            pcb_revision_diff schematic_revision_diff
+
       - name: Record build information
+        env:
+          SOURCE_COMMIT: ${{ github.sha }}
+          SOURCE_REPOSITORY: ${{ github.repository }}
+          SOURCE_REF: ${{ github.ref }}
+          BUILD_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          docker run --rm \
-            -v "$PWD:/work" -w /work \
-            --env KICAD_CI_IMAGE \
-            --env SOURCE_COMMIT="$GITHUB_SHA" \
-            --env SOURCE_REPOSITORY="$GITHUB_REPOSITORY" \
-            --env SOURCE_REF="$GITHUB_REF" \
-            --env BUILD_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
-            --entrypoint /bin/bash \
-            "$KICAD_CI_IMAGE" \
-            -lc '
-              set -e
-              mkdir -p output/reports
+          set -e
+          mkdir -p output/reports
 
-              {
-                printf "%s\n" "KiCad project build information"
-                printf "%s\n" "=============================="
-                printf "Generated UTC: "
-                date -u "+%Y-%m-%dT%H:%M:%SZ"
-                printf "Repository: %s\n" "$SOURCE_REPOSITORY"
-                printf "Source commit: %s\n" "$SOURCE_COMMIT"
-                printf "Source ref: %s\n" "$SOURCE_REF"
-                printf "Workflow run: %s\n" "$BUILD_URL"
-                printf "Container image: %s\n" "$KICAD_CI_IMAGE"
-                printf "\nKiCad: "
-                kicad-cli version
-                printf "KiBot: "
-                kibot --version
-                printf "Python: "
-                /usr/bin/python3 --version
-              } > output/reports/build-info.txt
+          {
+            printf "%s\n" "KiCad project build information"
+            printf "%s\n" "=============================="
+            printf "Generated UTC: "
+            date -u "+%Y-%m-%dT%H:%M:%SZ"
+            printf "Repository: %s\n" "$SOURCE_REPOSITORY"
+            printf "Source commit: %s\n" "$SOURCE_COMMIT"
+            printf "Source ref: %s\n" "$SOURCE_REF"
+            printf "Workflow run: %s\n" "$BUILD_URL"
+            printf "Container image: %s\n" "$KICAD_CI_IMAGE"
+            printf "\nKiCad: "
+            kicad-cli version
+            printf "KiBot: "
+            kibot --version
+            printf "Python: "
+            /usr/bin/python3 --version
+          } > output/reports/build-info.txt
 
-              cat output/reports/build-info.txt
-            '
+          cat output/reports/build-info.txt
 
       - name: Upload ERC and DRC reports
         if: ${{ always() }}
@@ -166,6 +160,7 @@ jobs:
       - name: Commit generated files
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config user.name "github-actions[bot]"
           if [ -f meta/info.html ]; then
             echo "Template repository: generated outputs remain CI artifacts"
@@ -182,10 +177,37 @@ jobs:
             git push origin "HEAD:$GITHUB_REF"
           fi
 
+      - name: Prepare GitHub Pages files
+        if: ${{ vars.ENABLE_GITHUB_PAGES == 'true' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+        run: |
+          test -f output/index.html
+          mkdir -p "$RUNNER_TEMP/pages-site"
+          # Copy the output tree and dereference links; Pages artifacts cannot contain symlinks.
+          cp -rL output/. "$RUNNER_TEMP/pages-site/"
+          touch "$RUNNER_TEMP/pages-site/.nojekyll"
 
-# NOTES, original docker image:
-#        run: |
-#          docker run --rm --entrypoint /bin/bash \
-#            ghcr.io/inti-cmnb/kicad10_auto_full:1.9.1 \
-#            -lc 'kibot --version; kicad-cli version'
+      - name: Upload GitHub Pages artifact
+        if: ${{ vars.ENABLE_GITHUB_PAGES == 'true' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: ${{ runner.temp }}/pages-site
 
+  deploy-pages:
+    if: ${{ vars.ENABLE_GITHUB_PAGES == 'true' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    needs: verify-tools
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy generated files to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
