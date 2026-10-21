@@ -20,7 +20,7 @@ manufacturing outputs.
 - Git and a GitHub account for the CI workflow.
 - A browser and PDF viewer to inspect generated documents.
 
-Docker and KiBot do not need to be installed locally. The workflow runs them on
+Docker and KiBot do not need to be installed locally. The build steps run in one digest-pinned Docker container on
 a GitHub-hosted Ubuntu runner. Local KiCad and CI KiCad patch versions can differ;
 the CI build report records the version that generated the outputs.
 
@@ -296,6 +296,39 @@ references in the form `TP` followed by digits.
 Most supplied PCB drawing pages use an explicit 1:1 scale. A larger worksheet does
 not automatically resize the drawing; change the page scaling and its displayed
 scale label together when needed.
+
+## Optional online browsing with GitHub Pages
+
+The workflow can publish the generated `output/` directory as a website. The
+existing HTML index links to PDFs, renders, the interactive BOM and downloadable
+manufacturing files. Output commits and normal CI artifacts remain enabled.
+
+To enable publishing in a project repository:
+
+1. Open **Settings → Pages** and select **GitHub Actions** as the build and
+   deployment source.
+2. Open **Settings → Secrets and variables → Actions → Variables** and create a
+   **repository variable** named `ENABLE_GITHUB_PAGES` with the value `true`.
+   Use a repository variable, not an environment variable or secret.
+3. Start a fresh workflow run on the repository's default branch, or push a commit
+   to that branch. Set the variable before starting the run.
+4. Open the URL shown by the `deploy-pages` job after it succeeds. For a normal
+   project repository, it is `https://OWNER.github.io/REPOSITORY/`.
+
+Publishing is disabled when the variable is absent or has any value other than
+`true`. Feature branches build normally but do not publish. If the
+`github-pages` environment restricts deployment branches, allow the repository's
+default branch. No separate website repository or personal access token is needed.
+
+The root `https://OWNER.github.io/` address does not need to exist for a project
+website to work. The generated index determines the site's appearance; GitHub
+Pages hosts those files without redesigning them.
+
+Everything inside `output/` is published, including reports and build information.
+Review those files before enabling publishing. For public repositories, treat the
+website as public. Keep the HTML-index output enabled when publishing.
+
+Example: [Desk_controller generated documentation](https://flrhw.github.io/Desk_controller/).
 
 ## Output locations and viewing
 
