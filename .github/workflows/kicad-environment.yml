@@ -158,7 +158,7 @@ jobs:
           name: template-generated-outputs
           path: output/
           if-no-files-found: warn
-          retention-days: 1
+          retention-days: 5
 
       - name: Commit generated files
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
