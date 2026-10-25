@@ -149,13 +149,16 @@ jobs:
 
           cat output/reports/build-info.txt
 
-      - name: Upload ERC and DRC reports
-        if: ${{ always() }}
+      # Template projects do not commit generated outputs; keep their CI preview briefly.
+      # Derived projects commit output/ instead, so do not store a duplicate artifact.
+      - name: Upload template outputs
+        if: ${{ always() && hashFiles('meta/info.html') != '' }}
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
-          name: erc-drc-reports
+          name: template-generated-outputs
           path: output/
           if-no-files-found: warn
+          retention-days: 1
 
       - name: Commit generated files
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
